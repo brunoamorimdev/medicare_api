@@ -10,6 +10,7 @@ packages = [{include = "medicare_api"}]
 python = "^3.11"
 django = "^4.2.6"
 djangorestframework = "^3.14.0"
+python-decouple = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest-django = "^4.5.2"

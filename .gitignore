@@ -3,3 +3,7 @@
 
 # Poetry
 poetry.lock
+
+# Environment
+.env.production
+.env
