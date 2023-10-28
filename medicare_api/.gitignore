@@ -1,13 +1,3 @@
-# Virtualenv
-.venv
-
-# Poetry
-poetry.lock
-
-# Environment
-.env.production
-.env
-
 ### Django ###
 *.log
 *.pot
