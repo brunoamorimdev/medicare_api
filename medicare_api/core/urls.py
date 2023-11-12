@@ -1,9 +1,6 @@
-from django.urls import path, include
-from core.views import HealthCheckView
-import user.urls as urls
+from django.urls import include, path
+import api.urls as api_patterns
 
 urlpatterns = [
-    path("", HealthCheckView.as_view(), name="health_check_urls"),
-    path("user/", include("user.urls"), name="user_urls"),
-    path("professional/", include("professional.urls"), name="professional_urls"),
+    path("api/", include((api_patterns, "api"))),
 ]

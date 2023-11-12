@@ -1,28 +1,57 @@
-from django.db import connections
-from django.http import JsonResponse
+from typing import Any
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from core.serializers import BasePaginationFilterSerializer
+from core.helpers import CustomPagination, api_view_exception_handler
+from authentication.helpers import CustomAuth
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 
-class HealthCheckView(APIView):
-    def get(self, request):
-        health_status = self.check_health()
-        return JsonResponse({"api_status": health_status, "message": "Welcome!"})
+class BaseAPIView(APIView, PermissionRequiredMixin):
+    serializer_filter_class = BasePaginationFilterSerializer
+    pagination_class = CustomPagination
+    authentication_classes = [CustomAuth]
+    raise_exception = True
+    permission_required = None
 
-    def check_health(self):
-        # Check database connectivity
-        database_errors = []
-        for alias in connections:
-            connection = connections[alias]
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT 1;")
-            except Exception as e:
-                database_errors.append(f"Database error ({alias}): {str(e)}")
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
-        if database_errors:
-            return "unhealthy"
+    def initial(self, request, *args, **kwargs):
+        # Request Context
+        self.ctx = {
+            "method": self.request.method,
+            "user": self.request.user,
+            "view_name": self.__class__.__name__,
+        }
 
-        # You can add more health checks here
-        # For example, check external services, file system access, etc.
+        return super().initial(request, *args, **kwargs)
 
-        return "healthy"
+    def handle_exception(self, exc):
+        ctx = self.ctx
+        if not ctx:
+            ctx = {}
+        return api_view_exception_handler(exc=exc, ctx=ctx)
+
+    def get_serialized_query_params(self):
+        serializer = self.serializer_filter_class
+
+        if serializer:
+            data = getattr(self.request, "query_params")
+            serializer = serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            return serializer.data
+        return {}
+
+    def get_paginated_response(self, serialized_data):
+        response = Response(serialized_data)
+
+        pagination = self.get_serialized_query_params().get("pagination", None)
+        if pagination == "active":
+            # Use your CustomPagination class to paginate the results
+            paginator = self.pagination_class()
+            response = paginator.get_paginated_response(
+                paginator.paginate_queryset(serialized_data, self.request)
+            )
+
+        return response

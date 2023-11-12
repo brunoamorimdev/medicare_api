@@ -1,7 +1,6 @@
 from functools import cached_property
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from user.managers import UserManager
+from django.contrib.auth.models import AbstractUser, Permission
 from core.models import BaseModel
 
 
@@ -11,12 +10,10 @@ class User(BaseModel, AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("username", "password", "first_name", "last_name")
 
-    objects = UserManager()
-
     class Meta:
         db_table = "auth_user"
-        verbose_name = "auth_user"
-        verbose_name_plural = "auth_users"
+        verbose_name = "auth user"
+        verbose_name_plural = "auth users"
 
 
 class BaseUserProfile(BaseModel):

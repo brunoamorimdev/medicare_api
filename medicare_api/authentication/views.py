@@ -1,5 +1,7 @@
 import rest_framework.serializers as serializers
 from typing import TYPE_CHECKING
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from core.views import BaseAPIView
 from core.helpers import ApplicationError
@@ -9,10 +11,7 @@ if TYPE_CHECKING:
     from rest_framework.request import Request
 
 
-class UserPermissionsAPI(BaseAPIView):
-    class InputSerializer(serializers.Serializer):
-        pass
-
+class AuthAPIView(BaseAPIView, ObtainAuthToken):
     class OutputSerializer(serializers.Serializer):
         token = serializers.CharField(source="key")
 
