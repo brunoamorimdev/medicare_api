@@ -1,4 +1,7 @@
 #!/bin/sh
+cd medicare_api
+
+poetry run python manage.py makemigrations
 
 # Apply database migrations (if needed)
 poetry run python manage.py migrate
